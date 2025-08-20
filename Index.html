@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>STREETMADE — магазин</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0c; --paper:#111214; --card:#141519; --stroke:#232429;
+  --text:#f3f4f6; --muted:#a1a1aa; --acc:#ff4d1f;
+  --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35);
+  --maxw:980px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 16px}
+
+/* top */
+.top{position:sticky;top:0;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);border-bottom:1px solid var(--stroke);z-index:80}
+.top .bar{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.hamb{width:42px;height:42px;border-radius:12px;background:var(--card);border:1px solid var(--stroke);display:flex;align-items:center;justify-content:center}
+.hamb i{width:18px;height:2px;background:#fff;position:relative}
+.hamb i:before,.hamb i:after{content:"";position:absolute;left:0;width:18px;height:2px;background:#fff}
+.hamb i:before{top:-6px}
+.hamb i:after{top:6px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:42px;height:42px;border-radius:10px;object-fit:cover;border:1px solid var(--stroke)}
+.brand .title{font-weight:700;letter-spacing:.6px}
+
+/* side menu */
+.sidedrawer{position:fixed;inset:0;display:none;z-index:90}
+.sidedrawer.open{display:block}
+.sidedrawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sidedrawer .panel{position:absolute;left:0;top:0;height:100%;width:86%;max-width:360px;background:var(--paper);border-right:1px solid var(--stroke);padding:12px;display:flex;flex-direction:column;gap:10px}
+.menu-head{display:flex;align-items:center;justify-content:space-between}
+.menu-list{display:flex;flex-direction:column;gap:8px;overflow:auto;padding:6px}
+.menu-list a{display:block;padding:10px;border-radius:10px;border:1px solid var(--stroke);background:var(--card)}
+
+/* hero */
+.hero{height:320px;background:#0b0b0c center/cover no-repeat;border-bottom:1px solid var(--stroke);position:relative}
+.hero .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.6))}
+.hero .inner{position:relative;z-index:2;max-width:var(--maxw);margin:0 auto;padding:40px 16px 20px}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--stroke);background:rgba(0,0,0,.35);color:var(--muted);font-size:13px}
+h1{font-size:30px;margin:10px 0 6px}
+.lead{color:var(--muted);max-width:520px}
+
+/* catalog */
+.section{padding:18px 0}
+.controls{display:flex;gap:8px;align-items:center;margin:8px 0 14px}
+.search{flex:1;display:flex;gap:8px}
+.search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--stroke);background:var(--card);color:var(--text)}
+.btn{padding:10px 12px;border-radius:10px;border:1px solid var(--stroke);background:linear-gradient(180deg,#18191d,#121318);color:var(--text);font-weight:600}
+.btn.acc{background:linear-gradient(180deg,#ff6433,#ff3d12);border-color:#ff2a00}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--stroke);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.card-media{aspect-ratio:1.2/1;background:#0f1013}
+.card-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.price{font-weight:800}
+
+/* product page */
+#productPage{display:none;padding-bottom:80px}
+.pwrap{max-width:var(--maxw);margin:0 auto;padding:12px}
+.pgrid{display:grid;grid-template-columns:1fr;gap:12px}
+.pimg{background:var(--card);border:1px solid var(--stroke);border-radius:12px;padding:10px}
+.thumbs{display:flex;gap:8px;margin-top:8px;overflow:auto}
+.thumbs img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--stroke);cursor:pointer}
+
+/* cart FAB */
+.fab{position:fixed;right:14px;bottom:16px;width:64px;height:64px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;z-index:100;box-shadow:var(--shadow);border:2px solid #fff}
+.fab img{width:30px;height:30px}
+.fab .badge{position:absolute;top:-8px;right:-8px;background:#fff;color:var(--acc);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#d63b10}
+
+/* cart drawer */
+.cart-drawer{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:120}
+.cart-drawer.open{display:flex}
+.cart-card{width:100%;max-height:80vh;background:var(--paper);border-top-left-radius:16px;border-top-right-radius:16px;border:1px solid var(--stroke);padding:10px;overflow:auto}
+.cart-row{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:10px;border:1px solid var(--stroke);background:var(--card);margin-bottom:8px}
+.cart-row img{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--stroke)}
+
+/* admin */
+.admin-wrap{padding:12px}
+.form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.small{font-size:13px;color:var(--muted)}
+
+/* footer */
+footer{padding:18px 8px;border-top:1px solid var(--stroke);display:flex;justify-content:center;gap:12px}
+footer img{width:34px;height:34px}
+
+/* responsive */
+@media(min-width:900px){
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .pgrid{grid-template-columns:1.2fr .8fr}
+}
+</style>
+</head>
+<body>
+
+<!-- top -->
+<div class="top">
+  <div class="wrap bar">
+    <button class="hamb" id="btnMenu" aria-label="menu"><i></i></button>
+    <a class="brand" href="#" id="homeBtn">
+      <img id="siteLogo" src="https://i.postimg.cc/HsN5Xrjd/Streetmade-20250612-113641-0000.png" alt="logo">
+      <div class="title">STREETMADE</div>
+    </a>
+    <div style="flex:1"></div>
+    <button class="btn" id="btnAdmin">Админ</button>
+  </div>
+</div>
+
+<!-- side menu -->
+<div class="sidedrawer" id="sideDrawer">
+  <div class="overlay" id="closeMenu"></div>
+  <div class="panel">
+    <div class="menu-head">
+      <strong>Категории</strong>
+      <button class="btn" id="closePanel">Закрыть</button>
+    </div>
+    <nav class="menu-list" id="menuList">
+      <a href="#cat/new" data-cat="new" class="active">Новинки</a>
+      <a href="#cat/sneakers" data-cat="sneakers">Кроссовки</a>
+      <a href="#cat/summerSneakers" data-cat="summerSneakers">Летние кроссовки</a>
+      <a href="#cat/jeans" data-cat="jeans">Джинсы</a>
+      <a href="#cat/summerJeans" data-cat="summerJeans">Летние джинсы</a>
+      <a href="#cat/tshirt" data-cat="tshirt">Футболки</a>
+      <a href="#cat/cap" data-cat="cap">Кепки</a>
+      <a href="#cat/watch" data-cat="watch">Часы</a>
+      <a href="#cat/accessories" data-cat="accessories">Аксессуары</a>
+      <a href="#cat/bags" data-cat="bags">Сумки и рюкзаки</a>
+      <a href="#cat/sale" data-cat="sale">Распродажа</a>
+      <a href="#cat/all" data-cat="all">Все товары</a>
+      <hr style="border:none;border-top:1px solid var(--stroke);margin:8px 0">
+      <a href="#admin" id="menuAdmin">Админ панель</a>
+    </nav>
+  </div>
+</div>
+
+<!-- hero -->
+<section class="hero" id="hero">
+  <div class="overlay"></div>
+  <div class="hero-inner wrap">
+    <span class="badge">Новый дроп</span>
+    <h1>Сила улицы — в тебе</h1>
+    <p class="lead">STREETMADE — кроссовки, одежда и аксессуары. Доставка по Душанбе. Оплата при получении или через WhatsApp.</p>
+  </div>
+</section>
+
+<!-- catalog -->
+<section class="section" id="catalog">
+  <div class="wrap">
+    <div class="section-top">
+      <h2 style="margin:0">Каталог</h2>
+      <div class="search">
+        <input id="qSearch" placeholder="Поиск по названию...">
+        <button class="btn" id="clearSearch">Сброс</button>
+      </div>
+    </div>
+
+    <div id="productsGrid" class="grid"></div>
+  </div>
+</section>
+
+<!-- product page -->
+<section id="productPage">
+  <div class="pwrap">
+    <a href="#" id="backToCatalog" class="small">← Назад</a>
+    <div class="pgrid">
+      <div>
+        <div class="pimg"><img id="prodMain" src="" alt="" style="width:100%;border-radius:10px"></div>
+        <div class="thumbs" id="prodThumbs"></div>
+      </div>
+      <div class="pinfo">
+        <h3 id="prodName"></h3>
+        <div id="prodPrice" style="font-weight:800"></div>
+        <div id="prodDesc" class="small muted"></div>
+        <div class="row" style="margin-top:8px;">
+          <label style="margin-right:8px">Размер:</label>
+          <select id="prodSize" class="select"></select>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <label style="margin-right:8px">Количество:</label>
+          <input id="prodQty" class="qty" type="number" min="1" value="1">
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" id="btnAdd">В корзину</button>
+          <button class="btn acc" id="btnBuyNow">Купить в WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- fab cart -->
+<button class="fab" id="openCartBtn" title="Корзина">
+  <img src="https://i.postimg.cc/9Qz9kpKr/cart-icon.png" alt="cart">
+  <div class="badge" id="cartCount">0</div>
+</button>
+
+<!-- cart drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 6px">
+      <strong>Корзина</strong>
+      <div>
+        <button class="btn" id="closeCart">Закрыть</button>
+      </div>
+    </div>
+    <div style="padding:8px" id="cartItems"></div>
+    <div style="padding:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center" class="total">
+        <span>Итого:</span>
+        <strong id="cartTotal">0 сом</strong>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn acc" id="checkout">Оформить в WhatsApp</button>
+        <button class="btn" id="clearCartBtn">Очистить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- footer -->
+<footer>
+  <a href="https://wa.me/992970090060" target="_blank" rel="noopener"><img src="https://i.postimg.cc/0yVv7mFv/whatsapp.png" alt="wa"></a>
+  <a href="https://instagram.com/streetmade_tj" target="_blank" rel="noopener"><img src="https://i.postimg.cc/7hR5c4Zk/instagram.png" alt="ig"></a>
+</footer>
+
+<!-- admin modal (simple) -->
+<div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:130;align-items:center;justify-content:center">
+  <div style="width:94%;max-width:720px;background:var(--paper);border:1px solid var(--stroke);border-radius:12px;padding:12px;max-height:88vh;overflow:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong>Админ панель</strong>
+      <div>
+        <button class="btn" id="closeAdmin">Закрыть</button>
+      </div>
+    </div>
+
+    <div class="admin-wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button id="btnNew" class="btn acc">Добавить товар</button>
+        <button id="btnExport" class="btn">Export JSON</button>
+        <button id="btnImport" class="btn">Import JSON</button>
+        <button id="btnClearData" class="btn">Сброс данных</button>
+        <span class="small muted" style="margin-left:8px">Пароль для админа: <code>streetmadeadmin</code> (можно сменить в коде)</span>
+      </div>
+
+      <div id="adminList"></div>
+
+      <hr style="border:none;border-top:1px solid var(--stroke);margin:12px 0">
+
+      <div id="adminForm" style="display:none;border:1px solid var(--stroke);padding:10px;border-radius:10px;background:var(--card)">
+        <div class="form-row">
+          <label>Название</label>
+          <input id="fName" type="text" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--paper);color:var(--text)">
+        </div>
+        <div class="form-row">
+          <label>Цена (сом)</label>
+          <input id="fPrice" type="number" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--paper);color:var(--text)">
+        </div>
+        <div class="form-row">
+          <label>Категория (sneakers,tshirt,cap,jeans,summerSneakers...)</label>
+          <input id="fCat" type="text" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--paper);color:var(--text)">
+        </div>
+        <div class="form-row">
+          <label>Размеры (через запятую) — например: 39,40,41 или S,M,L</label>
+          <input id="fSizes" type="text" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--paper);color:var(--text)">
+        </div>
+        <div class="form-row">
+          <label>Ссылки на изображения (через запятую)</label>
+          <input id="fImgs" type="text" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--paper);color:var(--text)">
+          <div class="small muted">Используй прямые ссылки (Postimages/Imgur). Можно указать одну ссылку.</div>
+        </div>
+        <div class="form-row">
+          <label>Описание</label>
+          <textarea id="fDesc" rows="3" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--paper);color:var(--text)"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="saveProduct" class="btn acc">Сохранить</button>
+          <button id="cancelProduct" class="btn">Отмена</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   ИНИЦИАЛЬНЫЕ ДАННЫЕ / ЗАПУСК
+   ========================= */
+
+/* Начальные товары — использую твои ссылки для первых трёх */
+const DEFAULT_PRODUCTS = [
+  {id:1, name:'Air Force White', price:850, category:'sneakers', sizes:['39','40','41','42','43','44'], images:['https://i.postimg.cc/dVSW7Qcy/Streetmade-20250603-195236-0000.png'], desc:'Белые Air Force — универсальный городской стиль.', isNew:true},
+  {id:2, name:'Urban Flame Low', price:900, category:'sneakers', sizes:['39','40','41','42','43','44'], images:['https://i.postimg.cc/13THmWD0/Streetmade-20250603-195010-0000.png'], desc:'Городские кеды с ярким акцентом.'},
+  {id:3, name:'Night Runner', price:920, category:'sneakers', sizes:['39','40','41','42','43'], images:['https://i.postimg.cc/nVkGjVvh/Streetmade-20250603-194924-0000.png'], desc:'Комфортные кроссовки для бега и улицы.'}
+];
+
+/* localStorage key */
+const LS_KEY = 'streetmade_products_v1';
+
+/* Загрузка/сохранение данных */
+function loadProducts(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){ localStorage.setItem(LS_KEY, JSON.stringify(DEFAULT_PRODUCTS)); return DEFAULT_PRODUCTS.slice(); }
+    return JSON.parse(raw);
+  }catch(e){ console.error(e); localStorage.setItem(LS_KEY, JSON.stringify(DEFAULT_PRODUCTS)); return DEFAULT_PRODUCTS.slice(); }
+}
+function saveProducts(arr){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
+
+/* глобальные */
+let PRODUCTS = loadProducts();
+let CART = []; // {id,size,qty}
+
+/* helpers */
+const $ = sel => document.querySelector(sel);
+const fmt = n => `${n} сом`;
+
+/* ============ ROUTER / UI SWITCH ============ */
+function showCatalog(){
+  $('#catalog').style.display = 'block';
+  $('#productPage').style.display = 'none';
+  renderCatalog();
+}
+function showProductPage(){ $('#catalog').style.display='none'; $('#productPage').style.display='block'; }
+
+/* ============ CATALOG ============ */
+const productsGrid = $('#productsGrid');
+function renderCatalog(filterList){
+  const list = filterList || PRODUCTS;
+  if(!list || !list.length){ productsGrid.innerHTML = '<div class="small muted">Товары не найдены</div>'; return; }
+  productsGrid.innerHTML = list.map(p => `
+    <article class="card">
+      <div class="card-media"><img src="${(p.images && p.images[0]) || ''}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <div style="font-weight:700">${p.name}</div>
+            <div class="small muted">${p.isNew ? 'Новинка' : 'В наличии'}</div>
+          </div>
+          <div class="price">${fmt(p.price)}</div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn acc" onclick="openProduct(${p.id})">Подробнее</button>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+/* поиск + фильтры меню */
+$('#qSearch').addEventListener('input', ()=> {
+  const q = $('#qSearch').value.trim().toLowerCase();
+  const filtered = PRODUCTS.filter(p => p.name.toLowerCase().includes(q));
+  renderCatalog(filtered);
+});
+$('#clearSearch').addEventListener('click', ()=>{ $('#qSearch').value=''; renderCatalog(); });
+
+/* side menu open/close */
+$('#btnMenu').addEventListener('click', ()=> $('#sideDrawer').classList.add('open'));
+$('#closeMenu').addEventListener('click', ()=> $('#sideDrawer').classList.remove('open'));
+$('#closePanel').addEventListener('click', ()=> $('#sideDrawer').classList.remove('open'));
+
+/* menu category clicks -> filter */
+$('#menuList').addEventListener('click', (e)=>{
+  const a = e.target.closest('a[data-cat]');
+  if(!a) return;
+  const cat = a.dataset.cat;
+  // set active
+  $$('#menuList a').forEach(x=>x.classList.remove('active'));
+  a.classList.add('active');
+  $('#sideDrawer').classList.remove('open');
+  if(cat==='all'){ renderCatalog(PRODUCTS); return; }
+  if(cat==='new'){ renderCatalog(PRODUCTS.filter(p => p.isNew)); return; }
+  renderCatalog(PRODUCTS.filter(p => p.category===cat));
+});
+
+/* helper $$ */
+function $$(sel){ return Array.from(document.querySelectorAll(sel)); }
+
+/* ============ PRODUCT PAGE ============ */
+let currentProduct = null;
+function openProduct(id){
+  const p = PRODUCTS.find(x => x.id === id);
+  if(!p) return;
+  currentProduct = p;
+  // fill
+  $('#prodName').textContent = p.name;
+  $('#prodPrice').textContent = fmt(p.price);
+  $('#prodDesc').textContent = p.desc || '';
+  $('#prodMain').src = (p.images && p.images[0]) || '';
+  // thumbs
+  $('#prodThumbs').innerHTML = (p.images || []).map(src => `<img src="${src}" alt="">`).join('');
+  $('#prodThumbs').onclick = (ev) => {
+    const img = ev.target.closest('img');
+    if(!img) return;
+    $('#prodMain').src = img.src;
+  };
+  // sizes
+  $('#prodSize').innerHTML = (p.sizes||['OS']).map(s=>`<option value="${s}">${s}</option>`).join('');
+  $('#prodQty').value = 1;
+  showProductPage();
+  window.scrollTo(0,0);
+}
+$('#backToCatalog').addEventListener('click', (e)=>{ e.preventDefault(); showCatalog(); });
+
+/* product page buttons */
+$('#btnAdd').addEventListener('click', ()=> {
+  const size = $('#prodSize').value;
+  const qty  = Math.max(1, parseInt($('#prodQty').value||'1',10));
+  addToCart(currentProduct.id, size, qty);
+});
+$('#btnBuyNow').addEventListener('click', ()=> {
+  const size = $('#prodSize').value;
+  const qty  = Math.max(1, parseInt($('#prodQty').value||'1',10));
+  const sum = currentProduct.price * qty;
+  const text = encodeURIComponent(`Здравствуйте! Хочу купить:\n${currentProduct.name}\nРазмер: ${size}\nКол-во: ${qty}\nИтого: ${sum} сом`);
+  window.open('https://wa.me/992970090060?text='+text,'_blank');
+});
+
+/* ============ CART ============ */
+function loadCart(){ try{ return JSON.parse(localStorage.getItem('streetmade_cart_v1')) || []; }catch(e){return [];}}
+function saveCart(){ localStorage.setItem('streetmade_cart_v1', JSON.stringify(CART)); }
+function updateCartBadge(){ $('#cartCount').textContent = CART.reduce((s,i)=>s+i.qty,0); }
+
+function addToCart(id,size,qty){
+  const found = CART.find(i=>i.id===id && i.size===size);
+  if(found) found.qty += qty; else CART.push({id,size,qty});
+  saveCart(); updateCartBadge(); openCart();
+}
+
+/* open cart */
+$('#openCartBtn').addEventListener('click', openCart);
+function openCart(){
+  renderCart();
+  $('#cartDrawer').classList.add('open');
+}
+$('#closeCart').addEventListener('click', ()=> $('#cartDrawer').classList.remove('open'));
+
+function renderCart(){
+  const box = $('#cartItems');
+  const cart = CART = loadCart();
+  if(cart.length===0){ box.innerHTML = '<div class="small muted">Корзина пуста</div>'; $('#cartTotal').textContent = fmt(0); updateCartBadge(); return; }
+  let total = 0;
+  box.innerHTML = cart.map(item => {
+    const p = PRODUCTS.find(x=>x.id===item.id) || {};
+    const sum = (p.price || 0) * item.qty; total += sum;
+    return `<div class="cart-row">
+      <div style="display:flex;gap:8px;align-items:center">
+        <img src="${(p.images&&p.images[0])||''}" alt="">
+        <div>
+          <div style="font-weight:700">${p.name}</div>
+          <div class="small muted">Размер: ${item.size} · ${fmt(p.price||0)} × ${item.qty}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <div style="display:flex;gap:6px">
+          <button class="btn" onclick="changeQty(${item.id},'${item.size}',-1)">−</button>
+          <button class="btn" onclick="changeQty(${item.id},'${item.size}',+1)">+</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn" onclick="removeFromCart(${item.id},'${item.size}')">Удалить</button>
+          <strong>${fmt(sum)}</strong>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  $('#cartTotal').textContent = fmt(total);
+  updateCartBadge();
+}
+
+function changeQty(id,size,delta){
+  const item = CART.find(i=>i.id===id && i.size===size);
+  if(!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  saveCart(); renderCart(); updateCartBadge();
+}
+function removeFromCart(id,size){
+  CART = CART.filter(i=>!(i.id===id && i.size===size));
+  saveCart(); renderCart(); updateCartBadge();
+}
+$('#clearCartBtn').addEventListener('click', ()=>{ CART=[]; saveCart(); renderCart(); updateCartBadge(); });
+
+/* checkout */
+$('#checkout').addEventListener('click', ()=>{
+  const cart = loadCart();
+  if(!cart.length) return alert('Корзина пуста');
+  const lines = cart.map(i => {
+    const p = PRODUCTS.find(x=>x.id===i.id);
+    return `- ${p.name}\n  Размер: ${i.size}\n  Кол-во: ${i.qty}\n  Сумма: ${p.price*i.qty} сом`;
+  });
+  const total = cart.reduce((s,i)=> s + PRODUCTS.find(x=>x.id===i.id).price*i.qty, 0);
+  const text = encodeURIComponent(`Здравствуйте! Хочу оформить заказ в STREETMADE:\n\n${lines.join('\n\n')}\n\nИтого: ${total} сом`);
+  window.open('https://wa.me/992970090060?text='+text,'_blank');
+});
+
+/* init cart from storage */
+CART = loadCart(); updateCartBadge();
+
+/* ============ ADMIN (simple local) ============ */
+const ADMIN_PASS = 'streetmadeadmin'; // можешь поменять в коде
+
+$('#btnAdmin').addEventListener('click', ()=>{
+  const pass = prompt('Пароль администратора:');
+  if(pass === ADMIN_PASS){ openAdmin(); } else { alert('Неверный пароль'); }
+});
+
+function openAdmin(){
+  $('#adminModal').style.display = 'flex';
+  renderAdminList();
+}
+
+/* close admin */
+$('#closeAdmin').addEventListener('click', ()=> $('#adminModal').style.display = 'none');
+
+/* admin logic */
+function renderAdminList(){
+  const box = $('#adminList');
+  box.innerHTML = PRODUCTS.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:10px;border:1px solid var(--stroke);margin-bottom:8px;background:var(--card)">
+      <div>
+        <div style="font-weight:700">${p.name}</div>
+        <div class="small muted">${p.category} · ${fmt(p.price)}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="editProduct(${p.id})">Ред</button>
+        <button class="btn" onclick="deleteProduct(${p.id})">Удалить</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* add new */
+$('#btnNew').addEventListener('click', ()=>{
+  $('#adminForm').style.display = 'block';
+  $('#fName').value=''; $('#fPrice').value=''; $('#fCat').value='sneakers'; $('#fSizes').value='39,40,41,42,43'; $('#fImgs').value=''; $('#fDesc').value='';
+  $('#saveProduct').dataset.editId = '';
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* save product */
+$('#saveProduct').addEventListener('click', ()=>{
+  const name = $('#fName').value.trim();
+  const price = parseInt($('#fPrice').value||'0',10);
+  const cat = $('#fCat').value.trim() || 'sneakers';
+  const sizes = $('#fSizes').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const imgs = $('#fImgs').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const desc = $('#fDesc').value.trim();
+  if(!name || !price){ alert('Введите название и цену'); return; }
+  const editId = $('#saveProduct').dataset.editId;
+  if(editId){
+    // edit
+    const idx = PRODUCTS.findIndex(x=>x.id==editId);
+    if(idx>=0){
+      PRODUCTS[idx].name = name; PRODUCTS[idx].price = price; PRODUCTS[idx].category = cat;
+      PRODUCTS[idx].sizes = sizes; PRODUCTS[idx].images = imgs; PRODUCTS[idx].desc = desc;
+      saveProducts(PRODUCTS); renderAdminList(); $('#adminForm').style.display='none'; renderCatalog();
+    }
+  } else {
+    // new
+    const newid = (PRODUCTS.reduce((s,p)=>Math.max(s,p.id),0) || 0) + 1;
+    PRODUCTS.push({id:newid, name, price, category:cat, sizes, images: imgs, desc});
+    saveProducts(PRODUCTS); renderAdminList(); $('#adminForm').style.display='none'; renderCatalog();
+  }
+});
+
+/* edit product */
+function editProduct(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  $('#adminForm').style.display='block';
+  $('#fName').value = p.name;
+  $('#fPrice').value = p.price;
+  $('#fCat').value = p.category;
+  $('#fSizes').value = (p.sizes||[]).join(',');
+  $('#fImgs').value = (p.images||[]).join(',');
+  $('#fDesc').value = p.desc||'';
+  $('#saveProduct').dataset.editId = id;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* delete */
+function deleteProduct(id){
+  if(!confirm('Удалить товар?')) return;
+  PRODUCTS = PRODUCTS.filter(p=>p.id!==id);
+  saveProducts(PRODUCTS);
+  renderAdminList(); renderCatalog();
+}
+
+/* cancel */
+$('#cancelProduct').addEventListener('click', ()=> { $('#adminForm').style.display='none'; });
+
+/* export/import/clear */
+$('#btnExport').addEventListener('click', ()=>{
+  const data = JSON.stringify(PRODUCTS, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'streetmade_products.json'; document.body.appendChild(a); a.click(); a.remove();
+});
+$('#btnImport').addEventListener('click', ()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
+  input.onchange = (e) => {
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const imported = JSON.parse(reader.result);
+        if(Array.isArray(imported)){
+          PRODUCTS = imported;
+          saveProducts(PRODUCTS);
+          renderAdminList(); renderCatalog(); alert('Импорт выполнен');
+        } else alert('Неверный формат файла');
+      }catch(err){alert('Ошибка чтения файла')}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+});
+$('#btnClearData').addEventListener('click', ()=>{
+  if(!confirm('Сбросить все товары к стандарту?')) return;
+  PRODUCTS = DEFAULT_PRODUCTS.slice();
+  saveProducts(PRODUCTS);
+  renderAdminList(); renderCatalog();
+});
+
+/* when mounted */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // set hero background to provided airforce image if exists in initial products
+  const p0 = PRODUCTS.find(p=>p.images && p.images[0]);
+  if(p0) document.querySelector('.hero').style.backgroundImage = `url('${p0.images[0]}')`;
+  renderCatalog();
+  renderAdminList();
+});
+
+/* expose some functions for buttons in HTML */
+window.openProduct = openProduct;
+window.addToCart = (id) => {
+  // open product page first (for size selection)
+  openProduct(id);
+  // scroll to sizes
+  window.setTimeout(()=>{ document.getElementById('prodSize').focus(); },300);
+};
+window.deleteProduct = deleteProduct;
+window.editProduct = editProduct;
+</script>
+</body>
+</html>
